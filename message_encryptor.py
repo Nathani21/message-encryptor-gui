@@ -1,10 +1,9 @@
-import base64, json, random, io, sys, qrcode
+import base64, json, qrcode
 from math import ceil
 
 import customtkinter as ctk
 from tkinter import messagebox
-from tkinter import ttk
-from PIL import Image, ImageTk
+from PIL import ImageTk
 
 # ---------------- Utility functions ---------------- #
 
