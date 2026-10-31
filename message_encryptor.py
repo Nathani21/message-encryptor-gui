@@ -15,7 +15,7 @@ from tkinter import filedialog, messagebox
 def caesar_encrypt(message, shift):
     result = []
     for ch in message:
-        if ch.isalpha():
+        if ch.isalpha() and ch.isascii():
             ascii_offset = ord("a") if ch.islower() else ord("A")
             result.append(chr((ord(ch) - ascii_offset + shift) % 26 + ascii_offset))
         else:
@@ -298,15 +298,21 @@ class MessageEncryptorApp(ctk.CTk):
         try:
             decoded = base64.b64decode(package_b64).decode()
             data = json.loads(decoded)
-            enc_msg = data.get("msg")
+            enc_msg = data["msg"]
             meta = data.get("meta", {})
+            if not isinstance(enc_msg, str):
+                raise ValueError("msg must be a string")
         except Exception:
             messagebox.showerror("Error", "Invalid encrypted package format")
             return
 
         alg = meta.get("alg")
         if alg == "Caesar":
-            shift = meta.get("shift", 0)
+            try:
+                shift = int(meta.get("shift", 0))
+            except (TypeError, ValueError):
+                messagebox.showerror("Error", "Package has an invalid Caesar shift")
+                return
             decrypted = caesar_decrypt(enc_msg, shift)
         elif alg == "Reverse":
             decrypted = reverse_decrypt(enc_msg)
