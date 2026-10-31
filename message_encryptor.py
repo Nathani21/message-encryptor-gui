@@ -152,7 +152,14 @@ class MessageEncryptorApp(ctk.CTk):
         self.encrypt_btn = ctk.CTkButton(self.action_frame, text="Encrypt", command=self.action_encrypt)
         self.encrypt_btn.pack(fill="x", pady=6)
 
-        self.decrypt_btn = ctk.CTkButton(self.action_frame, text="Decrypt", fg_color=None, command=self.action_decrypt)
+        self.decrypt_btn = ctk.CTkButton(
+            self.action_frame,
+            text="Decrypt",
+            fg_color="transparent",
+            border_width=2,
+            text_color=("gray10", "gray90"),
+            command=self.action_decrypt,
+        )
         self.decrypt_btn.pack(fill="x", pady=(0, 6))
 
         # Output area
@@ -226,13 +233,11 @@ class MessageEncryptorApp(ctk.CTk):
 
     # ---------------- Algorithm control ---------------- #
     def alg_changed(self, val):
-        if val == "Caesar":
-            # enable shift entry
-            self.shift_spin.configure(state="normal")
-            self.shift_label.configure(state="normal")
-        else:
-            self.shift_spin.configure(state="disabled")
-            self.shift_label.configure(state="disabled")
+        is_caesar = val == "Caesar"
+        self.shift_spin.configure(state="normal" if is_caesar else "disabled")
+        self.shift_label.configure(
+            text_color=("gray10", "gray90") if is_caesar else ("gray60", "gray40")
+        )
 
     # ---------------- Core actions ---------------- #
     def action_encrypt(self):
