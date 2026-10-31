@@ -1,3 +1,9 @@
+"""Message Encryptor: a small educational GUI for classic encodings.
+
+Caesar, Reverse and Base64 are NOT secure encryption. The output stores the
+algorithm and Caesar shift next to the message, so anyone can decode it.
+"""
+
 import base64, json, qrcode
 from math import ceil
 
@@ -170,7 +176,7 @@ class MessageEncryptorApp(ctk.CTk):
         self.qr_btn.pack(side="left", padx=6, pady=6)
 
         # Strength meter and log inside right frame
-        self.strength_label = ctk.CTkLabel(self.right_frame, text="Encryption Strength:")
+        self.strength_label = ctk.CTkLabel(self.right_frame, text="Complexity score (not real security):")
         self.strength_label.pack(anchor="w", padx=12, pady=(12, 6))
 
         self.strength_bar = ctk.CTkProgressBar(self.right_frame, width=240)
