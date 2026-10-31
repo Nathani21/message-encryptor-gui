@@ -6,6 +6,8 @@ A small desktop app (Python + CustomTkinter) for encoding and decoding messages 
 
 > **Educational project, not real security.** Caesar, Reverse and Base64 are encodings, not encryption. The output stores the algorithm and Caesar shift next to the message, so anyone can decode it. Don't use this for secrets.
 
+![Message Encryptor screenshot](screenshot.png)
+
 ## Features
 
 - Three algorithms: Caesar (adjustable shift), Reverse and Base64
