@@ -76,6 +76,54 @@ def encryption_strength(message, algorithm, shift=None):
     score = max(0, min(100, score))
     return score
 
+def encrypt_message(message, algorithm, shift=None):
+    """Return the Base64 JSON package for a message. Raises ValueError on bad input."""
+    if algorithm == "Caesar":
+        if shift is None:
+            raise ValueError("Shift must be an integer")
+        result = caesar_encrypt(message, shift)
+        meta = {"alg": "Caesar", "shift": shift}
+    elif algorithm == "Reverse":
+        result = reverse_encrypt(message)
+        meta = {"alg": "Reverse"}
+    elif algorithm == "Base64":
+        result = base64_encrypt(message)
+        meta = {"alg": "Base64"}
+    else:
+        raise ValueError("Unknown algorithm selected")
+
+    package = json.dumps({"msg": result, "meta": meta})
+    return base64.b64encode(package.encode()).decode()
+
+
+def decrypt_package(package_b64):
+    """Return (text, algorithm, shift) from a package. Raises ValueError on bad input."""
+    try:
+        data = json.loads(base64.b64decode(package_b64).decode())
+        enc_msg = data["msg"]
+        meta = data.get("meta", {})
+        if not isinstance(enc_msg, str) or not isinstance(meta, dict):
+            raise ValueError
+    except Exception:
+        raise ValueError("Invalid encrypted package format")
+
+    alg = meta.get("alg")
+    shift = None
+    if alg == "Caesar":
+        try:
+            shift = int(meta.get("shift", 0))
+        except (TypeError, ValueError):
+            raise ValueError("Package has an invalid Caesar shift")
+        decrypted = caesar_decrypt(enc_msg, shift)
+    elif alg == "Reverse":
+        decrypted = reverse_decrypt(enc_msg)
+    elif alg == "Base64":
+        decrypted = base64_decrypt(enc_msg)
+        if decrypted is None:
+            raise ValueError("Package looks like Base64 but failed to decode")
+    else:
+        raise ValueError(f"Unknown algorithm in package: {alg}")
+    return decrypted, alg, shift
 
 # ---------------- GUI ---------------- #
 
@@ -246,40 +294,26 @@ class MessageEncryptorApp(ctk.CTk):
             return
 
         algorithm = self.alg_option.get()
-        result = None
-
+        shift = None
         if algorithm == "Caesar":
             try:
                 shift = int(self.shift_spin.get())
-            except Exception:
+            except ValueError:
                 messagebox.showerror("Error", "Shift must be an integer")
                 return
-            result = caesar_encrypt(raw, shift)
-            meta = {"alg": "Caesar", "shift": shift}
 
-        elif algorithm == "Reverse":
-            result = reverse_encrypt(raw)
-            meta = {"alg": "Reverse"}
-
-        elif algorithm == "Base64":
-            result = base64_encrypt(raw)
-            meta = {"alg": "Base64"}
-
-        else:
-            messagebox.showerror("Error", "Unknown algorithm selected")
+        try:
+            package_b64 = encrypt_message(raw, algorithm, shift)
+        except ValueError as e:
+            messagebox.showerror("Error", str(e))
             return
-
-        # package result with metadata (so decryption can know which algorithm)
-        package = json.dumps({"msg": result, "meta": meta})
-        package_b64 = base64.b64encode(package.encode()).decode()
 
         self.output_box.delete("0.0", "end")
         self.output_box.insert("0.0", package_b64)
 
         # update strength meter
         try:
-            shift_val = meta.get("shift") if "shift" in meta else None
-            strength = encryption_strength(raw, algorithm, shift_val)
+            strength = encryption_strength(raw, algorithm, shift)
         except Exception:
             strength = 0
         self.strength_bar.set(strength / 100.0)
@@ -294,35 +328,10 @@ class MessageEncryptorApp(ctk.CTk):
             messagebox.showerror("Error", "Please paste an encrypted package into the input box")
             return
 
-        # try to decode base64 then json
         try:
-            decoded = base64.b64decode(package_b64).decode()
-            data = json.loads(decoded)
-            enc_msg = data["msg"]
-            meta = data.get("meta", {})
-            if not isinstance(enc_msg, str):
-                raise ValueError("msg must be a string")
-        except Exception:
-            messagebox.showerror("Error", "Invalid encrypted package format")
-            return
-
-        alg = meta.get("alg")
-        if alg == "Caesar":
-            try:
-                shift = int(meta.get("shift", 0))
-            except (TypeError, ValueError):
-                messagebox.showerror("Error", "Package has an invalid Caesar shift")
-                return
-            decrypted = caesar_decrypt(enc_msg, shift)
-        elif alg == "Reverse":
-            decrypted = reverse_decrypt(enc_msg)
-        elif alg == "Base64":
-            decrypted = base64_decrypt(enc_msg)
-            if decrypted is None:
-                messagebox.showerror("Error", "Package looks like Base64 but failed to decode")
-                return
-        else:
-            messagebox.showerror("Error", f"Unknown algorithm in package: {alg}")
+            decrypted, alg, shift = decrypt_package(package_b64)
+        except ValueError as e:
+            messagebox.showerror("Error", str(e))
             return
 
         self.output_box.delete("0.0", "end")
@@ -330,7 +339,7 @@ class MessageEncryptorApp(ctk.CTk):
 
         # update strength (based on decrypted text and algorithm)
         try:
-            strength = encryption_strength(decrypted, alg, meta.get("shift"))
+            strength = encryption_strength(decrypted, alg, shift)
         except Exception:
             strength = 0
         self.strength_bar.set(strength / 100.0)
