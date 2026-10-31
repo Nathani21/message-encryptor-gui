@@ -8,8 +8,7 @@ import base64, json, qrcode
 from math import ceil
 
 import customtkinter as ctk
-from tkinter import messagebox
-from PIL import ImageTk
+from tkinter import filedialog, messagebox
 
 # ---------------- Utility functions ---------------- #
 
@@ -343,37 +342,39 @@ class MessageEncryptorApp(ctk.CTk):
             qr = qrcode.QRCode(error_correction=qrcode.constants.ERROR_CORRECT_Q)
             qr.add_data(text)
             qr.make(fit=True)
-            img = qr.make_image(fill_color="black", back_color="white").convert("RGB")
+        except Exception:
+            messagebox.showerror("Error", "Output is too long to fit in a QR code")
+            return
 
-            # Resize for display
-            max_size = 400
-            img.thumbnail((max_size, max_size))
+        full_img = qr.make_image(fill_color="black", back_color="white").convert("RGB")
+        preview = full_img.copy()
+        preview.thumbnail((400, 400))
 
-            # show in popup
-            top = ctk.CTkToplevel(self)
-            top.title("Encrypted QR Code")
-            top.geometry(f"{img.width+40}x{img.height+100}")
-            top.resizable(False, False)
+        top = ctk.CTkToplevel(self)
+        top.title("Encrypted QR Code")
+        top.geometry(f"{preview.width + 40}x{preview.height + 100}")
+        top.resizable(False, False)
+        top.transient(self)
 
-            pil_img = ImageTk.PhotoImage(img)
-            img_label = ctk.CTkLabel(top, image=pil_img)
-            img_label.image = pil_img
-            img_label.pack(pady=10)
+        ctk_img = ctk.CTkImage(light_image=preview, dark_image=preview, size=preview.size)
+        ctk.CTkLabel(top, text="", image=ctk_img).pack(pady=10)
 
-            # add a save button
-            def save_qr():
-                try:
-                    save_path = "encrypted_qr.png"
-                    img.save(save_path)
-                    messagebox.showinfo("Saved", f"QR saved to {save_path}")
-                except Exception as e:
-                    messagebox.showerror("Error", f"Failed to save QR: {e}")
+        def save_qr():
+            path = filedialog.asksaveasfilename(
+                parent=top,
+                defaultextension=".png",
+                initialfile="encrypted_qr.png",
+                filetypes=[("PNG image", "*.png")],
+            )
+            if not path:
+                return
+            try:
+                full_img.save(path)
+                messagebox.showinfo("Saved", f"QR saved to {path}", parent=top)
+            except Exception as e:
+                messagebox.showerror("Error", f"Failed to save QR: {e}", parent=top)
 
-            save_btn = ctk.CTkButton(top, text="Save QR as encrypted_qr.png", command=save_qr)
-            save_btn.pack(pady=(8, 12))
-
-        except Exception as e:
-            messagebox.showerror("Error", f"Failed to generate QR: {e}")
+        ctk.CTkButton(top, text="Save QR as PNG", command=save_qr).pack(pady=(8, 12))
 
 
 if __name__ == '__main__':
