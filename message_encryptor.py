@@ -87,8 +87,8 @@ class MessageEncryptorApp(ctk.CTk):
     def __init__(self):
         super().__init__()
         self.title("Message Encryptor")
-        self.geometry("1000x750")
-        self.resizable(False, False)
+        self.geometry("860x620")
+        self.minsize(800, 590)
 
         # main frames
         self.header_frame = ctk.CTkFrame(self, corner_radius=8)
@@ -109,15 +109,15 @@ class MessageEncryptorApp(ctk.CTk):
         self.left_frame = ctk.CTkFrame(self.body_frame, corner_radius=6)
         self.left_frame.pack(side="left", fill="both", expand=True, padx=(12, 6), pady=12)
 
-        self.right_frame = ctk.CTkFrame(self.body_frame, corner_radius=6, width=320)
+        self.right_frame = ctk.CTkFrame(self.body_frame, corner_radius=6, width=300)
         self.right_frame.pack(side="right", fill="y", padx=(6, 12), pady=12)
 
         # Input area
         self.input_label = ctk.CTkLabel(self.left_frame, text="Input:")
         self.input_label.pack(anchor="w", padx=8, pady=(8, 0))
 
-        self.input_box = ctk.CTkTextbox(self.left_frame, width=480, height=220)
-        self.input_box.pack(padx=8, pady=(4, 8))
+        self.input_box = ctk.CTkTextbox(self.left_frame, width=420, height=140)
+        self.input_box.pack(fill="both", expand=True, padx=8, pady=(4, 8))
 
         # small buttons under input
         self.input_buttons_frame = ctk.CTkFrame(self.left_frame, fg_color="transparent")
@@ -166,8 +166,8 @@ class MessageEncryptorApp(ctk.CTk):
         self.output_label = ctk.CTkLabel(self.left_frame, text="Output:")
         self.output_label.pack(anchor="w", padx=8, pady=(12, 0))
 
-        self.output_box = ctk.CTkTextbox(self.left_frame, width=480, height=220)
-        self.output_box.pack(padx=8, pady=(4, 8))
+        self.output_box = ctk.CTkTextbox(self.left_frame, width=420, height=140)
+        self.output_box.pack(fill="both", expand=True, padx=8, pady=(4, 8))
 
         # small buttons under output
         self.output_buttons_frame = ctk.CTkFrame(self.left_frame, fg_color="transparent")
@@ -197,7 +197,7 @@ class MessageEncryptorApp(ctk.CTk):
         self.log_label = ctk.CTkLabel(self.right_frame, text="Log:")
         self.log_label.pack(anchor="w", padx=12)
 
-        self.log_box = ctk.CTkTextbox(self.right_frame, height=200, width=280, state="normal")
+        self.log_box = ctk.CTkTextbox(self.right_frame, height=110, width=260, state="normal")
         self.log_box.insert("0.0", "Ready.\n")
         self.log_box.configure(state="disabled")
         self.log_box.pack(padx=12, pady=(4, 12))
