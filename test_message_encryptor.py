@@ -1,3 +1,6 @@
+import base64
+import json
+
 import pytest
 
 from message_encryptor import (
@@ -5,6 +8,8 @@ from message_encryptor import (
     base64_encrypt,
     caesar_decrypt,
     caesar_encrypt,
+    decrypt_package,
+    encrypt_message,
     encryption_strength,
     reverse_decrypt,
     reverse_encrypt,
@@ -95,3 +100,71 @@ def test_strength_larger_caesar_shift_scores_higher():
 def test_strength_stays_between_0_and_100(algorithm):
     score = encryption_strength("Aa1!" * 50, algorithm, 25)
     assert 0 <= score <= 100
+
+# ---------- Packages ----------
+
+def make_package(payload):
+    return base64.b64encode(json.dumps(payload).encode()).decode()
+
+
+@pytest.mark.parametrize(
+    "algorithm, shift",
+    [("Caesar", 3), ("Caesar", -7), ("Reverse", None), ("Base64", None)],
+)
+def test_package_round_trip(algorithm, shift):
+    package = encrypt_message("Café, Hello 123!", algorithm, shift)
+    text, alg, got_shift = decrypt_package(package)
+    assert text == "Café, Hello 123!"
+    assert alg == algorithm
+    assert got_shift == shift
+
+
+def test_encrypt_unknown_algorithm_raises():
+    with pytest.raises(ValueError, match="Unknown algorithm"):
+        encrypt_message("hi", "ROT47")
+
+
+def test_encrypt_caesar_without_shift_raises():
+    with pytest.raises(ValueError, match="Shift"):
+        encrypt_message("hi", "Caesar")
+
+
+def test_decrypt_rejects_text_that_is_not_a_package():
+    with pytest.raises(ValueError, match="Invalid encrypted package"):
+        decrypt_package("not a package")
+
+
+def test_decrypt_rejects_missing_msg():
+    with pytest.raises(ValueError, match="Invalid encrypted package"):
+        decrypt_package(make_package({"meta": {"alg": "Reverse"}}))
+
+
+def test_decrypt_rejects_non_string_msg():
+    with pytest.raises(ValueError, match="Invalid encrypted package"):
+        decrypt_package(make_package({"msg": 123, "meta": {"alg": "Reverse"}}))
+
+
+def test_decrypt_rejects_meta_that_is_not_an_object():
+    with pytest.raises(ValueError, match="Invalid encrypted package"):
+        decrypt_package(make_package({"msg": "abc", "meta": ["x"]}))
+
+
+def test_decrypt_rejects_non_numeric_caesar_shift():
+    package = make_package({"msg": "abc", "meta": {"alg": "Caesar", "shift": "x"}})
+    with pytest.raises(ValueError, match="invalid Caesar shift"):
+        decrypt_package(package)
+
+
+def test_decrypt_rejects_unknown_algorithm():
+    with pytest.raises(ValueError, match="Unknown algorithm in package"):
+        decrypt_package(make_package({"msg": "abc", "meta": {"alg": "ROT47"}}))
+
+
+def test_decrypt_rejects_undecodable_base64_message():
+    with pytest.raises(ValueError, match="failed to decode"):
+        decrypt_package(make_package({"msg": "abc", "meta": {"alg": "Base64"}}))
+
+
+def test_decrypt_caesar_without_shift_defaults_to_zero():
+    package = make_package({"msg": "abc", "meta": {"alg": "Caesar"}})
+    assert decrypt_package(package) == ("abc", "Caesar", 0)
