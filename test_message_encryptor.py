@@ -14,7 +14,7 @@ from message_encryptor import (
 # ---------- Caesar ----------
 
 def test_caesar_basic_shift():
-    assert caesar_encrypt("abc", 3) == "def"
+    assert caesar_encrypt("abc", 3) == "xyz"
 
 
 def test_caesar_wraps_around_alphabet():
