@@ -22,7 +22,7 @@ A small desktop app (Python + CustomTkinter) for encoding and decoding messages 
 Requires Python 3 (tested on 3.13).
 
 ```
-pip install customtkinter "qrcode[pil]"
+pip install -r requirements.txt
 python message_encryptor.py
 ```
 
