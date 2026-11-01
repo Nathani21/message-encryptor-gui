@@ -17,6 +17,10 @@ A small desktop app (Python + CustomTkinter) for encoding and decoding messages 
 - Copy and clear buttons, an activity log, and light, dark and system themes
 - Resizable window
 
+## Download
+
+Windows users can download `message_encryptor.exe` from the [Releases](https://github.com/Nathani21/message-encryptor-gui/releases) page. Windows SmartScreen may warn because the file isn't code-signed: click "More info", then "Run anyway".
+
 ## Run it
 
 Requires Python 3 (tested on 3.13).

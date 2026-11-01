@@ -133,7 +133,7 @@ ctk.set_default_color_theme("blue")
 class MessageEncryptorApp(ctk.CTk):
     def __init__(self):
         super().__init__()
-        self.title("Message Encryptor")
+        self.title("Message Encryptor v1.0")
         self.geometry("860x620")
         self.minsize(800, 590)
 
