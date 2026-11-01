@@ -137,14 +137,17 @@ class MessageEncryptorApp(ctk.CTk):
         self.geometry("860x620")
         self.minsize(800, 590)
 
-        # main frames
+        self._build_header()
+        self._build_body()
+
+        # initial state
+        self.alg_changed("Caesar")
+
+    # ---------------- Layout ---------------- #
+    def _build_header(self):
         self.header_frame = ctk.CTkFrame(self, corner_radius=8)
         self.header_frame.pack(padx=16, pady=(16, 8), fill="x")
 
-        self.body_frame = ctk.CTkFrame(self, corner_radius=8)
-        self.body_frame.pack(padx=16, pady=8, fill="both", expand=True)
-
-        # header content
         self.title_label = ctk.CTkLabel(self.header_frame, text="Message Encryptor", font=ctk.CTkFont(size=22, weight="bold"))
         self.title_label.grid(row=0, column=0, sticky="w", padx=12, pady=12)
 
@@ -152,14 +155,24 @@ class MessageEncryptorApp(ctk.CTk):
         self.appearance_option.set("System")
         self.appearance_option.grid(row=0, column=1, sticky="e", padx=8)
 
-        # body layout: left (input) | right (controls + output)
+    def _build_body(self):
+        self.body_frame = ctk.CTkFrame(self, corner_radius=8)
+        self.body_frame.pack(padx=16, pady=8, fill="both", expand=True)
+
+        # body layout: left (input and output) | right (controls, score, log)
         self.left_frame = ctk.CTkFrame(self.body_frame, corner_radius=6)
         self.left_frame.pack(side="left", fill="both", expand=True, padx=(12, 6), pady=12)
 
         self.right_frame = ctk.CTkFrame(self.body_frame, corner_radius=6, width=300)
         self.right_frame.pack(side="right", fill="y", padx=(6, 12), pady=12)
 
-        # Input area
+        self._build_input_area()
+        self._build_output_area()
+        self._build_controls()
+        self._build_strength_meter()
+        self._build_log()
+
+    def _build_input_area(self):
         self.input_label = ctk.CTkLabel(self.left_frame, text="Input:")
         self.input_label.pack(anchor="w", padx=8, pady=(8, 0))
 
@@ -173,7 +186,27 @@ class MessageEncryptorApp(ctk.CTk):
         self.clear_input_btn = ctk.CTkButton(self.input_buttons_frame, text="Clear Input", width=120, command=self.clear_input)
         self.clear_input_btn.pack(side="left", padx=6, pady=6)
 
-        # Controls (algorithm etc.)
+    def _build_output_area(self):
+        self.output_label = ctk.CTkLabel(self.left_frame, text="Output:")
+        self.output_label.pack(anchor="w", padx=8, pady=(12, 0))
+
+        self.output_box = ctk.CTkTextbox(self.left_frame, width=420, height=140)
+        self.output_box.pack(fill="both", expand=True, padx=8, pady=(4, 8))
+
+        # small buttons under output
+        self.output_buttons_frame = ctk.CTkFrame(self.left_frame, fg_color="transparent")
+        self.output_buttons_frame.pack(fill="x", padx=8)
+
+        self.copy_btn = ctk.CTkButton(self.output_buttons_frame, text="Copy Output", width=120, command=self.copy_output)
+        self.copy_btn.pack(side="left", padx=6, pady=6)
+
+        self.clear_output_btn = ctk.CTkButton(self.output_buttons_frame, text="Clear Output", width=120, command=self.clear_output)
+        self.clear_output_btn.pack(side="left", padx=6, pady=6)
+
+        self.qr_btn = ctk.CTkButton(self.output_buttons_frame, text="Show QR", width=120, command=self.show_qr)
+        self.qr_btn.pack(side="left", padx=6, pady=6)
+
+    def _build_controls(self):
         self.alg_label = ctk.CTkLabel(self.right_frame, text="Algorithm:")
         self.alg_label.pack(anchor="w", padx=12, pady=(12, 6))
 
@@ -209,27 +242,7 @@ class MessageEncryptorApp(ctk.CTk):
         )
         self.decrypt_btn.pack(fill="x", pady=(0, 6))
 
-        # Output area
-        self.output_label = ctk.CTkLabel(self.left_frame, text="Output:")
-        self.output_label.pack(anchor="w", padx=8, pady=(12, 0))
-
-        self.output_box = ctk.CTkTextbox(self.left_frame, width=420, height=140)
-        self.output_box.pack(fill="both", expand=True, padx=8, pady=(4, 8))
-
-        # small buttons under output
-        self.output_buttons_frame = ctk.CTkFrame(self.left_frame, fg_color="transparent")
-        self.output_buttons_frame.pack(fill="x", padx=8)
-
-        self.copy_btn = ctk.CTkButton(self.output_buttons_frame, text="Copy Output", width=120, command=self.copy_output)
-        self.copy_btn.pack(side="left", padx=6, pady=6)
-
-        self.clear_output_btn = ctk.CTkButton(self.output_buttons_frame, text="Clear Output", width=120, command=self.clear_output)
-        self.clear_output_btn.pack(side="left", padx=6, pady=6)
-
-        self.qr_btn = ctk.CTkButton(self.output_buttons_frame, text="Show QR", width=120, command=self.show_qr)
-        self.qr_btn.pack(side="left", padx=6, pady=6)
-
-        # Strength meter and log inside right frame
+    def _build_strength_meter(self):
         self.strength_label = ctk.CTkLabel(self.right_frame, text="Complexity score (not real security):")
         self.strength_label.pack(anchor="w", padx=12, pady=(12, 6))
 
@@ -240,7 +253,7 @@ class MessageEncryptorApp(ctk.CTk):
         self.strength_text = ctk.CTkLabel(self.right_frame, text="—")
         self.strength_text.pack(anchor="w", padx=12, pady=(6, 12))
 
-        # Log box
+    def _build_log(self):
         self.log_label = ctk.CTkLabel(self.right_frame, text="Log:")
         self.log_label.pack(anchor="w", padx=12)
 
@@ -248,9 +261,6 @@ class MessageEncryptorApp(ctk.CTk):
         self.log_box.insert("0.0", "Ready.\n")
         self.log_box.configure(state="disabled")
         self.log_box.pack(padx=12, pady=(4, 12))
-
-        # initial state
-        self.alg_changed("Caesar")
 
     # ---------------- UI helper methods ---------------- #
     def change_appearance(self, choice):
