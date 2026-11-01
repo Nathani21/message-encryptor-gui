@@ -258,7 +258,7 @@ class MessageEncryptorApp(ctk.CTk):
         self.log_label.pack(anchor="w", padx=12)
 
         self.log_box = ctk.CTkTextbox(self.right_frame, height=110, width=260, state="normal")
-        self.log_box.insert("0.0", "Ready.\n")
+        self.log_box.insert("1.0", "Ready.\n")
         self.log_box.configure(state="disabled")
         self.log_box.pack(padx=12, pady=(4, 12))
 
@@ -268,13 +268,13 @@ class MessageEncryptorApp(ctk.CTk):
         ctk.set_appearance_mode(choice)
 
     def clear_input(self):
-        self.input_box.delete("0.0", "end")
+        self.input_box.delete("1.0", "end")
 
     def clear_output(self):
-        self.output_box.delete("0.0", "end")
+        self.output_box.delete("1.0", "end")
 
     def copy_output(self):
-        txt = self.output_box.get("0.0", "end").strip()
+        txt = self.output_box.get("1.0", "end").strip()
         if not txt:
             messagebox.showinfo("Info", "Output is empty")
             return
@@ -298,7 +298,7 @@ class MessageEncryptorApp(ctk.CTk):
 
     # ---------------- Core actions ---------------- #
     def action_encrypt(self):
-        raw = self.input_box.get("0.0", "end").rstrip('\n')
+        raw = self.input_box.get("1.0", "end").rstrip('\n')
         if not raw.strip():
             messagebox.showerror("Error", "Please enter a message to encrypt")
             return
@@ -318,8 +318,8 @@ class MessageEncryptorApp(ctk.CTk):
             messagebox.showerror("Error", str(e))
             return
 
-        self.output_box.delete("0.0", "end")
-        self.output_box.insert("0.0", package_b64)
+        self.output_box.delete("1.0", "end")
+        self.output_box.insert("1.0", package_b64)
 
         # update strength meter
         try:
@@ -333,7 +333,7 @@ class MessageEncryptorApp(ctk.CTk):
         self.log(f"Encrypted (alg={algorithm}) — {len(raw)} chars")
 
     def action_decrypt(self):
-        package_b64 = self.input_box.get("0.0", "end").strip()
+        package_b64 = self.input_box.get("1.0", "end").strip()
         if not package_b64:
             messagebox.showerror("Error", "Please paste an encrypted package into the input box")
             return
@@ -344,8 +344,8 @@ class MessageEncryptorApp(ctk.CTk):
             messagebox.showerror("Error", str(e))
             return
 
-        self.output_box.delete("0.0", "end")
-        self.output_box.insert("0.0", decrypted)
+        self.output_box.delete("1.0", "end")
+        self.output_box.insert("1.0", decrypted)
 
         # update strength (based on decrypted text and algorithm)
         try:
@@ -358,7 +358,7 @@ class MessageEncryptorApp(ctk.CTk):
         self.log(f"Decrypted (alg={alg}) — {len(decrypted)} chars")
 
     def show_qr(self):
-        text = self.output_box.get("0.0", "end").strip()
+        text = self.output_box.get("1.0", "end").strip()
         if not text:
             messagebox.showinfo("Info", "No output to convert to QR")
             return
