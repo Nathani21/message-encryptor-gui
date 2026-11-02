@@ -4,11 +4,16 @@ Caesar, Reverse and Base64 are NOT secure encryption. The output stores the
 algorithm and Caesar shift next to the message, so anyone can decode it.
 """
 
-import base64, json, qrcode
+import base64, json, os, sys, qrcode
 from math import ceil
 
 import customtkinter as ctk
 from tkinter import filedialog, messagebox
+
+def resource_path(relative_path):
+    """Find a bundled file both when running the script and inside the PyInstaller exe."""
+    base = getattr(sys, "_MEIPASS", os.path.dirname(os.path.abspath(__file__)))
+    return os.path.join(base, relative_path)
 
 # ---------------- Utility functions ---------------- #
 
@@ -137,6 +142,9 @@ class MessageEncryptorApp(ctk.CTk):
         self.geometry("860x620")
         self.minsize(800, 590)
 
+        # CustomTkinter sets its own icon just after the window opens, so set ours slightly later
+        self.after(250, self._set_icon)
+
         self._build_header()
         self._build_body()
 
@@ -261,6 +269,12 @@ class MessageEncryptorApp(ctk.CTk):
         self.log_box.insert("1.0", "Ready.\n")
         self.log_box.configure(state="disabled")
         self.log_box.pack(padx=12, pady=(4, 12))
+
+    def _set_icon(self):
+        try:
+            self.iconbitmap(resource_path(os.path.join("assets", "icon.ico")))
+        except Exception:
+            pass  # a missing or unsupported icon should never stop the app
 
     # ---------------- UI helper methods ---------------- #
     def change_appearance(self, choice):
